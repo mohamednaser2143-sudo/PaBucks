@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pa Bucks — Classroom Economy</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f4f1ec;--surface:#fff;--border:#e4dfd8;--text:#1a1a1a;--dim:#8a8478;--accent:#1a6b4a;--accent-light:#e8f5ee;--accent2:#d4a020;--accent2-light:#fef8e8;--red:#c03030;--red-light:#fde8e8;--blue:#2060c0;--blue-light:#e8f0ff;--orange:#c06020;--orange-light:#fef0e0;--card:#fff;--radius:12px;--shadow:0 2px 12px rgba(0,0,0,.06)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:'Sora',sans-serif;min-height:100vh}
+.screen{display:none;min-height:100vh}.screen.active{display:block}
+
+.topnav{background:var(--surface);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;align-items:center;gap:8px;position:sticky;top:0;z-index:50;flex-wrap:wrap}
+.topnav .logo{font-weight:800;font-size:1.1rem;color:var(--accent);margin-right:auto;display:flex;align-items:center;gap:5px}
+.topnav .logo span{background:var(--accent);color:#fff;padding:2px 7px;border-radius:5px;font-size:.7rem}
+.nav-user{font-size:.8rem;color:var(--dim);font-weight:600}
+.nb{padding:5px 12px;border:1px solid var(--border);border-radius:7px;background:var(--surface);font-family:'Sora',sans-serif;font-weight:600;font-size:.75rem;cursor:pointer;transition:all .15s;color:var(--text);position:relative}
+.nb:hover{border-color:var(--accent);color:var(--accent)}
+.nb.red{border-color:var(--red);color:var(--red)}
+.notif-badge{position:absolute;top:-4px;right:-4px;background:var(--red);color:#fff;font-size:.55rem;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800}
+
+#login-screen.active{display:flex;align-items:center;justify-content:center;background:linear-gradient(160deg,#e8f5ee,#f4f1ec,#fef8e8)}
+.login-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:32px;width:100%;max-width:360px;box-shadow:var(--shadow);text-align:center}
+.login-logo{font-weight:800;font-size:2.2rem;color:var(--accent);margin-bottom:4px}
+.login-logo .pb{background:var(--accent);color:#fff;padding:2px 10px;border-radius:7px;font-size:1rem;margin-left:5px}
+.login-sub{color:var(--dim);font-size:.85rem;margin-bottom:24px}
+.fg{margin-bottom:12px;text-align:left}
+.fg label{display:block;font-size:.68rem;color:var(--dim);margin-bottom:3px;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.fg input,.fg select,.fg textarea{width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:var(--radius);font-family:'Sora',sans-serif;font-size:.88rem;outline:none;background:var(--bg);color:var(--text)}.fg input:focus,.fg select:focus{border-color:var(--accent)}
+.btn{padding:9px 18px;border:none;border-radius:var(--radius);font-family:'Sora',sans-serif;font-weight:700;font-size:.82rem;cursor:pointer;transition:all .15s}
+.btn-primary{background:var(--accent);color:#fff}.btn-primary:hover{background:#15573d}
+.btn-outline{background:transparent;border:1.5px solid var(--border);color:var(--text)}.btn-outline:hover{border-color:var(--accent);color:var(--accent)}
+.btn-danger{background:var(--red);color:#fff}.btn-gold{background:var(--accent2);color:#fff}.btn-blue{background:var(--blue);color:#fff}
+.btn-block{width:100%}.btn-sm{padding:6px 12px;font-size:.75rem}
+
+/* TABS */
+.tabs{display:flex;gap:0;border-bottom:1px solid var(--border);padding:0 20px;background:var(--surface)}
+.tab{padding:10px 16px;font-size:.8rem;font-weight:700;color:var(--dim);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s}
+.tab:hover{color:var(--text)}.tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+
+/* CONTENT */
+.content{padding:20px;max-width:1100px;margin:0 auto}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+
+/* ACCOUNT CARDS */
+.acard{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px;box-shadow:var(--shadow);transition:all .15s}
+.acard:hover{box-shadow:0 4px 20px rgba(0,0,0,.1)}
+.atype{font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;padding:2px 8px;border-radius:5px;display:inline-block;margin-bottom:6px}
+.atype.personal{background:var(--blue-light);color:var(--blue)}.atype.business{background:var(--accent2-light);color:var(--accent2)}.atype.bank{background:var(--accent-light);color:var(--accent)}
+.aname{font-weight:800;font-size:1rem;margin-bottom:3px}
+.abal{font-family:'Space Mono',monospace;font-size:1.2rem;color:var(--accent);font-weight:700}
+.abal .pb{font-size:.75rem;color:var(--dim);font-weight:400}
+.aowner{font-size:.7rem;color:var(--dim);margin-top:4px}
+.aactions{display:flex;gap:5px;margin-top:10px;flex-wrap:wrap}
+.add-card{background:var(--bg);border:2px dashed var(--border);border-radius:14px;display:flex;align-items:center;justify-content:center;min-height:140px;cursor:pointer;flex-direction:column;gap:6px;color:var(--dim);font-weight:600;font-size:.85rem;transition:all .15s}
+.add-card:hover{border-color:var(--accent);color:var(--accent)}
+.add-card .plus{font-size:2rem;line-height:1}
+
+/* WALLET */
+.wh{background:var(--surface);border-bottom:1px solid var(--border);padding:18px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.wh-name{font-weight:800;font-size:1.2rem}.wh-type{font-size:.6rem;font-weight:700;text-transform:uppercase;padding:2px 8px;border-radius:5px}
+.wh-type.personal{background:var(--blue-light);color:var(--blue)}.wh-type.business{background:var(--accent2-light);color:var(--accent2)}
+.wh-bal{margin-left:auto;text-align:right}
+.wh-bal .amt{font-family:'Space Mono',monospace;font-size:1.6rem;color:var(--accent);font-weight:700}
+.wh-bal .lbl{font-size:.65rem;color:var(--dim);text-transform:uppercase;letter-spacing:1px}
+.wactions{padding:12px 20px;display:flex;gap:8px;flex-wrap:wrap;border-bottom:1px solid var(--border);background:var(--surface)}
+.wbody{display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:20px}
+@media(max-width:700px){.wbody{grid-template-columns:1fr}}
+.txp{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px;box-shadow:var(--shadow)}
+.txp h3{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;display:flex;align-items:center;gap:5px}
+.txp h3 .dot{width:7px;height:7px;border-radius:50%}.dot.green{background:var(--accent)}.dot.red{background:var(--red)}
+.txlist{display:flex;flex-direction:column;gap:5px;max-height:280px;overflow-y:auto}
+.txi{display:grid;grid-template-columns:1fr auto;gap:3px;padding:8px 10px;background:var(--bg);border-radius:8px;font-size:.78rem}
+.txi .tw{font-weight:600}.txi .td{font-size:.65rem;color:var(--dim)}
+.txi .ta{font-family:'Space Mono',monospace;font-weight:700;text-align:right}.ta.in{color:var(--accent)}.ta.out{color:var(--red)}
+.txempty{color:var(--dim);font-size:.82rem;text-align:center;padding:16px}
+
+/* SHOP */
+.shopgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;padding:14px 0}
+.sitem{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center}
+.sitem .sn{font-weight:700;font-size:.9rem;margin-bottom:3px}
+.sitem .sp{font-family:'Space Mono',monospace;color:var(--accent);font-weight:700;font-size:1rem;margin-bottom:8px}
+.sitem .sp .pb{font-size:.7rem;color:var(--dim)}
+.btn-buy{background:var(--accent);color:#fff;border:none;padding:7px 16px;border-radius:7px;font-family:'Sora',sans-serif;font-weight:700;font-size:.78rem;cursor:pointer;width:100%}.btn-buy:hover{background:#15573d}
+.shop-add{background:var(--bg);border:2px dashed var(--border);border-radius:10px;display:flex;align-items:center;justify-content:center;min-height:100px;cursor:pointer;color:var(--dim);font-weight:600;flex-direction:column;gap:3px;font-size:.8rem}.shop-add:hover{border-color:var(--accent);color:var(--accent)}
+
+/* LEADERBOARD */
+.lb-row{display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--surface);border:1px solid var(--border);border-radius:10px;margin-bottom:6px}
+.lb-rank{font-weight:800;font-size:1.1rem;width:30px;text-align:center;color:var(--accent2)}
+.lb-name{font-weight:700;flex:1}.lb-val{font-family:'Space Mono',monospace;font-weight:700;color:var(--accent)}
+.lb-row:nth-child(1) .lb-rank{color:#d4a020;font-size:1.3rem}
+.lb-row:nth-child(2) .lb-rank{color:#888}
+.lb-row:nth-child(3) .lb-rank{color:#a06030}
+
+/* STATS */
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:20px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center;box-shadow:var(--shadow)}
+.stat-num{font-family:'Space Mono',monospace;font-size:1.6rem;font-weight:700;color:var(--accent)}
+.stat-label{font-size:.7rem;color:var(--dim);text-transform:uppercase;letter-spacing:1px;margin-top:2px}
+
+/* NOTIFICATIONS */
+.notif-list{display:flex;flex-direction:column;gap:6px}
+.notif-item{padding:10px 14px;background:var(--surface);border:1px solid var(--border);border-radius:10px;font-size:.82rem;display:flex;align-items:flex-start;gap:8px}
+.notif-item .ni-icon{font-size:1.1rem;flex-shrink:0;margin-top:1px}
+.notif-item .ni-text{flex:1;line-height:1.4}.notif-item .ni-date{font-size:.65rem;color:var(--dim);white-space:nowrap}
+.notif-item.unread{background:var(--accent-light);border-color:var(--accent)}
+
+/* LOANS */
+.loan-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:8px}
+.loan-card.pending{border-left:3px solid var(--accent2)}
+.loan-card.active{border-left:3px solid var(--blue)}
+.loan-card.overdue{border-left:3px solid var(--red);background:var(--red-light)}
+.loan-card.paid{border-left:3px solid var(--accent);opacity:.6}
+
+/* RECEIPT */
+.receipt{background:#fff;border:2px dashed var(--border);border-radius:12px;padding:24px;max-width:320px;margin:0 auto;text-align:center;font-size:.85rem}
+.receipt h3{font-weight:800;margin-bottom:12px;color:var(--accent)}
+.receipt .r-line{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px dotted var(--border)}
+.receipt .r-total{font-weight:800;font-size:1.1rem;color:var(--accent);margin-top:8px}
+
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.3);display:none;align-items:center;justify-content:center;z-index:100;backdrop-filter:blur(2px)}
+.modal-bg.open{display:flex}
+.modal{background:var(--surface);border-radius:16px;padding:24px;max-width:440px;width:92%;box-shadow:0 8px 40px rgba(0,0,0,.12);max-height:90vh;overflow-y:auto}
+.modal h3{font-weight:800;font-size:1rem;margin-bottom:14px}
+.modal-actions{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+
+.toast-box{position:fixed;top:16px;right:16px;z-index:200;display:flex;flex-direction:column;gap:6px}
+.toast{padding:10px 16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);font-size:.82rem;box-shadow:var(--shadow);animation:si .3s;font-weight:600;max-width:280px}
+@keyframes si{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+</style>
+</head>
+<body>
+
+<div id="login-screen" class="screen active">
+  <div class="login-card">
+    <div class="login-logo">Pa<span class="pb">Bucks</span></div>
+    <div class="login-sub">Classroom Economy System</div>
+    <div class="fg"><label>Username</label><input id="l-user" placeholder="Enter username"></div>
+    <div class="fg"><label>Password</label><input id="l-pass" type="password" placeholder="Enter password"></div>
+    <button class="btn btn-primary btn-block" onclick="doLogin()" style="margin-bottom:8px">Log In</button>
+    <div id="l-err" style="color:var(--red);font-size:.78rem;min-height:18px"></div>
+  </div>
+</div>
+
+<div id="main-screen" class="screen">
+  <div class="topnav" id="topnav"></div>
+  <div class="tabs" id="tabs"></div>
+  <div class="content" id="content"></div>
+</div>
+
+<div class="modal-bg" id="mbg"><div class="modal" id="mdl"><h3 id="mt"></h3><div id="mb"></div><div class="modal-actions" id="ma"></div></div></div>
+<div class="toast-box" id="tb"></div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script>
+firebase.initializeApp({apiKey:"AIzaSyASPNSXdFs2B3X8mbUq-nBYlgAIR7BSx6E",authDomain:"fortuna-64c00.firebaseapp.com",databaseURL:"https://fortuna-64c00-default-rtdb.firebaseio.com",projectId:"fortuna-64c00",storageBucket:"fortuna-64c00.firebasestorage.app",messagingSenderId:"329218105683",appId:"1:329218105683:web:6b16fd2b1091531e4481a6"});
+const db=firebase.database(),R='pabucks2';
+
+let U=null,D=null,curTab='accounts',curWallet=null;
+const BANK_ID='bank_main';
+
+function show(id){document.querySelectorAll('.screen').forEach(s=>{s.classList.remove('active');s.style.display='none'});const el=document.getElementById(id);el.classList.add('active');el.style.display=id==='login-screen'?'flex':'block'}
+
+// ═══ INIT — create bank if not exists ═══
+async function initBank(){
+  const snap=await db.ref(R+'/accounts/'+BANK_ID).once('value');
+  if(!snap.exists()){
+    await db.ref(R+'/accounts/'+BANK_ID).set({type:'bank',name:'Pa Bucks Bank',balance:10000000,owner:'admin',ownerName:'Bank',products:{}});
+  }
+}
+
+// ═══ LOGIN ═══
+async function doLogin(){
+  try{
+    const user=document.getElementById('l-user').value.trim().toLowerCase();
+    const pass=document.getElementById('l-pass').value.trim();
+    if(!user||!pass){document.getElementById('l-err').textContent='Fill in both fields';return}
+    if(user==='admin'&&pass==='admin123'){
+      U={username:'admin',isAdmin:true,name:'Admin'};
+      await initBank();show('main-screen');startListening();return;
+    }
+    const snap=await db.ref(R+'/users/'+user).once('value');
+    const ud=snap.val();
+    if(!ud){document.getElementById('l-err').textContent='User not found';return}
+    if(ud.pass!==pass){document.getElementById('l-err').textContent='Wrong password';return}
+    U={username:user,isAdmin:false,name:ud.name};
+    show('main-screen');startListening();
+  }catch(e){document.getElementById('l-err').textContent='Error: '+e.message}
+}
+
+function logout(){U=null;D=null;curTab='accounts';curWallet=null;db.ref(R).off();show('login-screen')}
+
+function startListening(){
+  db.ref(R).on('value',snap=>{D=snap.val()||{accounts:{},users:{},transactions:{},loans:{},notifications:{},requests:{}};checkLateFees();renderAll()});
+}
+
+// ═══ LATE FEES CHECK — 250 PB per day late ═══
+function checkLateFees(){
+  if(!U?.isAdmin||!D)return;
+  const now=Date.now(),loans=D.loans||{};
+  Object.entries(loans).forEach(([lid,loan])=>{
+    if(loan.status!=='active')return;
+    const due=loan.dueDate;if(!due||now<due)return;
+    const daysLate=Math.floor((now-due)/86400000);
+    const expectedFine=daysLate*250;
+    const currentFine=loan.lateFee||0;
+    if(expectedFine>currentFine){
+      db.ref(R+'/loans/'+lid+'/lateFee').set(expectedFine);
+    }
+  });
+}
+
+// ═══ RENDER ═══
+function renderAll(){
+  if(!U||!D)return;
+  renderNav();renderTabs();renderContent();
+}
+
+function renderNav(){
+  const nav=document.getElementById('topnav');
+  const notifs=getMyNotifs();const unread=notifs.filter(n=>!n.read).length;
+  nav.innerHTML=`<div class="logo">Pa<span>Bucks</span></div>
+    <span class="nav-user">${U.name}</span>
+    <button class="nb" onclick="setTab('notifications')">🔔${unread?'<span class="notif-badge">'+unread+'</span>':''}</button>
+    <button class="nb" onclick="setTab('shops')">🛒 Shops</button>
+    <button class="nb" onclick="setTab('leaderboard')">🏆</button>
+    ${U.isAdmin?'<button class="nb" onclick="setTab(\'stats\')">📊</button>':''}
+    ${U.isAdmin?'<button class="nb" onclick="setTab(\'history\')">📋</button>':''}
+    ${U.isAdmin?'<button class="nb" onclick="setTab(\'loanadmin\')">🏦</button>':''}
+    <button class="nb red" onclick="logout()">Logout</button>`;
+}
+
+function renderTabs(){
+  const tabs=document.getElementById('tabs');
+  const allTabs=U.isAdmin?
+    [{id:'accounts',l:'Accounts'},{id:'shops',l:'Shops'},{id:'leaderboard',l:'Leaderboard'},{id:'stats',l:'Stats'},{id:'history',l:'History'},{id:'loanadmin',l:'Loans'},{id:'notifications',l:'Notifications'}]:
+    [{id:'accounts',l:'My Wallets'},{id:'shops',l:'Shops'},{id:'receipts',l:'Receipts'},{id:'loans',l:'Loans'},{id:'leaderboard',l:'Leaderboard'},{id:'notifications',l:'Notifications'}];
+  tabs.innerHTML=allTabs.map(t=>`<div class="tab${curTab===t.id?' active':''}" onclick="setTab('${t.id}')">${t.l}</div>`).join('');
+}
+
+function setTab(t){curTab=t;curWallet=null;renderAll()}
+
+function renderContent(){
+  const c=document.getElementById('content');
+  if(curWallet){renderWallet(c);return}
+  if(curTab==='accounts')renderAccounts(c);
+  else if(curTab==='shops')renderShops(c);
+  else if(curTab==='receipts')renderReceipts(c);
+  else if(curTab==='leaderboard')renderLeaderboard(c);
+  else if(curTab==='stats')renderStats(c);
+  else if(curTab==='history')renderHistory(c);
+  else if(curTab==='loans')renderMyLoans(c);
+  else if(curTab==='loanadmin')renderLoanAdmin(c);
+  else if(curTab==='notifications')renderNotifications(c);
+}
+
+// ═══ ACCOUNTS ═══
+function renderAccounts(c){
+  const accs=D.accounts||{};
+  let html='<div class="grid">';
+  const entries=Object.entries(accs).sort((a,b)=>a[1].name.localeCompare(b[1].name));
+  entries.forEach(([id,acc])=>{
+    if(!U.isAdmin&&acc.owner!==U.username)return;
+    if(id===BANK_ID&&!U.isAdmin)return;
+    html+=`<div class="acard">
+      <span class="atype ${acc.type}">${acc.type}</span>
+      <div class="aname">${acc.name}</div>
+      <div class="abal">${(acc.balance||0).toLocaleString()} <span class="pb">PB</span></div>
+      ${U.isAdmin&&acc.owner?'<div class="aowner">Owner: '+acc.owner+'</div>':''}
+      <div class="aactions">
+        <button class="btn btn-sm btn-outline" onclick="curWallet='${id}';renderAll()">Open</button>
+        ${U.isAdmin?`<button class="btn btn-sm btn-outline" onclick="showTransfer('${id}')">Transfer</button>
+        <button class="btn btn-sm btn-outline" onclick="showAddPB('${id}')">+PB</button>
+        <button class="btn btn-sm btn-outline" onclick="showFine('${id}')">Fine</button>
+        ${id!==BANK_ID?'<button class="btn btn-sm btn-danger" onclick="deleteAcc(\''+id+'\')">Del</button>':''}`:''}</div></div>`;
+  });
+  if(U.isAdmin)html+=`<div class="add-card" onclick="showCreateAcc()"><div class="plus">+</div>Create Account</div>`;
+  else if(!entries.some(([id,acc])=>acc.owner===U.username))html+=`<div style="text-align:center;padding:40px;color:var(--dim)">📭 No wallets yet</div>`;
+  html+='</div>';c.innerHTML=html;
+}
+
+// ═══ WALLET ═══
+function renderWallet(c){
+  const acc=(D.accounts||{})[curWallet];if(!acc){curWallet=null;renderContent();return}
+  const canEdit=U.isAdmin||(acc.owner===U.username);
+  const txs=Object.values(D.transactions||{}).filter(tx=>tx.from===curWallet||tx.to===curWallet).sort((a,b)=>b.date-a.date);
+  const incoming=txs.filter(tx=>tx.to===curWallet);
+  const outgoing=txs.filter(tx=>tx.from===curWallet);
+
+  let html=`<div class="wh"><span class="wh-type ${acc.type}">${acc.type}</span><div class="wh-name">${acc.name}</div><div class="wh-bal"><div class="lbl">Balance</div><div class="amt">${(acc.balance||0).toLocaleString()} PB</div></div></div>`;
+  html+=`<div class="wactions"><button class="btn btn-sm btn-outline" onclick="curWallet=null;renderAll()">← Back</button>`;
+  if(canEdit){
+    html+=`<button class="btn btn-sm btn-primary" onclick="showSend('${curWallet}')">💸 Send PB</button>`;
+    html+=`<button class="btn btn-sm btn-blue" onclick="showRequestMoney('${curWallet}')">📩 Request PB</button>`;
+    if(acc.type!=='bank')html+=`<button class="btn btn-sm btn-gold" onclick="showLoanRequest('${curWallet}')">🏦 Loan</button>`;
+    if(acc.type==='business')html+=`<button class="btn btn-sm btn-gold" onclick="showAddProduct('${curWallet}')">🛒 Add Product</button>`;
+  }
+  html+=`</div>`;
+
+  // Transaction panels
+  html+=`<div class="wbody"><div class="txp"><h3><span class="dot green"></span> Money In</h3><div class="txlist">${incoming.length?incoming.slice(0,20).map(tx=>`<div class="txi"><div><div class="tw">From: ${accName(tx.from)}</div><div class="td">${fmtDate(tx.date)} · ${tx.note||tx.type||'Transfer'}</div></div><div class="ta in">+${tx.amount} PB</div></div>`).join(''):'<div class="txempty">No incoming</div>'}</div></div>`;
+  html+=`<div class="txp"><h3><span class="dot red"></span> Money Out</h3><div class="txlist">${outgoing.length?outgoing.slice(0,20).map(tx=>`<div class="txi"><div><div class="tw">To: ${accName(tx.to)}</div><div class="td">${fmtDate(tx.date)} · ${tx.note||tx.type||'Transfer'}</div></div><div class="ta out">-${tx.amount} PB</div></div>`).join(''):'<div class="txempty">No outgoing</div>'}</div></div></div>`;
+
+  // Shop products if business
+  if(acc.type==='business'){
+    const prods=acc.products||{};
+    html+=`<div style="padding:0 20px 20px"><h3 style="font-weight:800;margin-bottom:4px">🛒 Shop Products</h3><div class="shopgrid">`;
+    Object.entries(prods).forEach(([pid,p])=>{
+      html+=`<div class="sitem"><div class="sn">${p.name}</div><div class="sp">${p.price} <span class="pb">PB</span></div>${canEdit?'<button class="btn btn-sm btn-danger" onclick="rmProduct(\''+curWallet+'\',\''+pid+'\')">Remove</button>':''}</div>`;
+    });
+    if(canEdit)html+=`<div class="shop-add" onclick="showAddProduct('${curWallet}')"><div style="font-size:1.2rem">+</div>Add Product</div>`;
+    html+=`</div></div>`;
+  }
+
+  // Loans for this wallet
+  const myLoans=Object.entries(D.loans||{}).filter(([lid,l])=>l.borrower===curWallet);
+  if(myLoans.length){
+    html+=`<div style="padding:0 20px 20px"><h3 style="font-weight:800;margin-bottom:8px">🏦 Loans</h3>`;
+    myLoans.forEach(([lid,l])=>{
+      const cls=l.status==='pending'?'pending':l.status==='active'?(l.lateFee>0?'overdue':'active'):'paid';
+      html+=`<div class="loan-card ${cls}"><div style="display:flex;justify-content:space-between;align-items:center"><div><strong>${l.amount} PB</strong> · ${l.status.toUpperCase()}</div><div style="font-size:.75rem;color:var(--dim)">${fmtDate(l.date)}</div></div>`;
+      if(l.dueDate)html+=`<div style="font-size:.78rem;color:var(--dim);margin-top:4px">Due: ${fmtDate(l.dueDate)}${l.lateFee>0?' · <span style="color:var(--red);font-weight:700">Late fee: '+l.lateFee+' PB</span>':''}</div>`;
+      if(l.status==='active'&&canEdit)html+=`<button class="btn btn-sm btn-primary" style="margin-top:6px" onclick="repayLoan('${lid}')">Repay ${l.amount+(l.lateFee||0)} PB</button>`;
+      html+=`</div>`;
+    });
+    html+=`</div>`;
+  }
+  c.innerHTML=html;
+}
+
+// ═══ SHOPS ═══
+function renderShops(c){
+  const accs=D.accounts||{};
+  let html='<h2 style="font-weight:800;margin-bottom:14px">🛒 All Shops</h2>';
+  let hasShops=false;
+  Object.entries(accs).forEach(([id,acc])=>{
+    if(acc.type!=='business')return;
+    const prods=acc.products||{};if(!Object.keys(prods).length)return;
+    hasShops=true;
+    html+=`<div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:14px;box-shadow:var(--shadow)"><h3 style="font-weight:800;margin-bottom:10px">${acc.name} <span class="atype business" style="font-size:.6rem">Business</span></h3><div class="shopgrid">`;
+    Object.entries(prods).forEach(([pid,p])=>{
+      html+=`<div class="sitem"><div class="sn">${p.name}</div><div class="sp">${p.price} <span class="pb">PB</span></div><button class="btn-buy" onclick="buyProduct('${id}','${pid}')">Buy Now</button></div>`;
+    });
+    html+=`</div></div>`;
+  });
+  if(!hasShops)html+='<div style="text-align:center;padding:40px;color:var(--dim)">No shops yet</div>';
+  c.innerHTML=html;
+}
+
+// ═══ LEADERBOARD ═══
+function renderLeaderboard(c){
+  const accs=D.accounts||{};
+  const personal=Object.entries(accs).filter(([id,a])=>a.type==='personal').sort((a,b)=>(b[1].balance||0)-(a[1].balance||0));
+  let html='<h2 style="font-weight:800;margin-bottom:14px">🏆 Leaderboard</h2>';
+  personal.forEach(([id,a],i)=>{
+    const medal=i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
+    html+=`<div class="lb-row"><div class="lb-rank">${medal||'#'+(i+1)}</div><div class="lb-name">${a.name}</div><div class="lb-val">${(a.balance||0).toLocaleString()} PB</div></div>`;
+  });
+  if(!personal.length)html+='<div style="text-align:center;padding:40px;color:var(--dim)">No personal accounts yet</div>';
+  c.innerHTML=html;
+}
+
+// ═══ ADMIN STATS ═══
+function renderStats(c){
+  const accs=D.accounts||{},txs=D.transactions||{},loans=D.loans||{};
+  const totalPB=Object.values(accs).reduce((s,a)=>s+(a.balance||0),0);
+  const totalAccs=Object.keys(accs).length;
+  const totalTx=Object.keys(txs).length;
+  const totalLoans=Object.values(loans).filter(l=>l.status==='active').length;
+  const totalBiz=Object.values(accs).filter(a=>a.type==='business').length;
+  let html=`<h2 style="font-weight:800;margin-bottom:14px">📊 Admin Stats</h2>
+    <div class="stat-grid">
+      <div class="stat-card"><div class="stat-num">${totalPB.toLocaleString()}</div><div class="stat-label">Total PB in System</div></div>
+      <div class="stat-card"><div class="stat-num">${totalAccs}</div><div class="stat-label">Total Accounts</div></div>
+      <div class="stat-card"><div class="stat-num">${totalBiz}</div><div class="stat-label">Businesses</div></div>
+      <div class="stat-card"><div class="stat-num">${totalTx}</div><div class="stat-label">Transactions</div></div>
+      <div class="stat-card"><div class="stat-num">${totalLoans}</div><div class="stat-label">Active Loans</div></div>
+    </div>`;
+  // Top earners
+  const sorted=Object.entries(accs).filter(([id,a])=>a.type==='personal').sort((a,b)=>(b[1].balance||0)-(a[1].balance||0)).slice(0,5);
+  html+=`<h3 style="font-weight:800;margin-bottom:8px">Top Earners</h3>`;
+  sorted.forEach(([id,a],i)=>{html+=`<div class="lb-row"><div class="lb-rank">#${i+1}</div><div class="lb-name">${a.name}</div><div class="lb-val">${(a.balance||0).toLocaleString()} PB</div></div>`});
+  c.innerHTML=html;
+}
+
+// ═══ TRANSACTION HISTORY ═══
+function renderHistory(c){
+  const txs=Object.entries(D.transactions||{}).sort((a,b)=>b[1].date-a[1].date);
+  let html='<h2 style="font-weight:800;margin-bottom:14px">📋 All Transactions</h2><div class="txlist" style="max-height:none">';
+  txs.slice(0,100).forEach(([tid,tx])=>{
+    html+=`<div class="txi"><div><div class="tw">${accName(tx.from)} → ${accName(tx.to)}</div><div class="td">${fmtDate(tx.date)} · ${tx.note||tx.type||'Transfer'}</div></div><div class="ta" style="color:var(--accent)">${tx.amount} PB</div></div>`;
+  });
+  if(!txs.length)html+='<div class="txempty">No transactions yet</div>';
+  html+='</div>';c.innerHTML=html;
+}
+
+// ═══ NOTIFICATIONS ═══
+function getMyNotifs(){
+  const all=Object.entries(D?.notifications||{}).map(([id,n])=>({id,...n}));
+  if(U.isAdmin)return all.filter(n=>n.to==='admin'||!n.to).sort((a,b)=>b.date-a.date);
+  return all.filter(n=>n.to===U.username||n.to==='all').sort((a,b)=>b.date-a.date);
+}
+
+function renderNotifications(c){
+  const notifs=getMyNotifs();
+  let html='<h2 style="font-weight:800;margin-bottom:14px">🔔 Notifications</h2>';
+  if(notifs.length){
+    // Mark all as read
+    notifs.forEach(n=>{if(!n.read)db.ref(R+'/notifications/'+n.id+'/read').set(true)});
+    html+='<div class="notif-list">';
+    notifs.slice(0,30).forEach(n=>{
+      html+=`<div class="notif-item${n.read?'':' unread'}"><div class="ni-icon">${n.icon||'💬'}</div><div class="ni-text">${n.msg}</div><div class="ni-date">${fmtDate(n.date)}</div></div>`;
+    });
+    html+='</div>';
+  }else html+='<div style="text-align:center;padding:40px;color:var(--dim)">No notifications</div>';
+  c.innerHTML=html;
+}
+
+// ═══ LOANS — user view ═══
+function renderMyLoans(c){
+  const accs=D.accounts||{};
+  const myAccIds=Object.entries(accs).filter(([id,a])=>a.owner===U.username).map(([id])=>id);
+  const loans=Object.entries(D.loans||{}).filter(([lid,l])=>myAccIds.includes(l.borrower)).sort((a,b)=>b[1].date-a[1].date);
+  let html='<h2 style="font-weight:800;margin-bottom:14px">🏦 My Loans</h2>';
+  if(loans.length){
+    loans.forEach(([lid,l])=>{
+      const cls=l.status==='pending'?'pending':l.status==='active'?(l.lateFee>0?'overdue':'active'):'paid';
+      html+=`<div class="loan-card ${cls}"><div style="display:flex;justify-content:space-between"><div><strong>${l.amount} PB</strong> · ${l.status.toUpperCase()}</div><div style="font-size:.75rem;color:var(--dim)">${fmtDate(l.date)}</div></div>`;
+      if(l.dueDate)html+=`<div style="font-size:.78rem;color:var(--dim);margin-top:4px">Due: ${fmtDate(l.dueDate)}${l.lateFee>0?' · <span style="color:var(--red);font-weight:700">Late fee: '+l.lateFee+' PB</span>':''}</div>`;
+      if(l.status==='active')html+=`<button class="btn btn-sm btn-primary" style="margin-top:6px" onclick="repayLoan('${lid}')">Repay ${l.amount+(l.lateFee||0)} PB</button>`;
+      html+=`</div>`;
+    });
+  }else html+='<div style="text-align:center;padding:40px;color:var(--dim)">No loans</div>';
+  c.innerHTML=html;
+}
+
+// ═══ LOAN ADMIN ═══
+function renderLoanAdmin(c){
+  const loans=Object.entries(D.loans||{}).sort((a,b)=>b[1].date-a[1].date);
+  let html='<h2 style="font-weight:800;margin-bottom:14px">🏦 Loan Management</h2>';
+  const pending=loans.filter(([lid,l])=>l.status==='pending');
+  if(pending.length){
+    html+='<h3 style="font-weight:700;margin-bottom:8px;color:var(--accent2)">Pending Approval</h3>';
+    pending.forEach(([lid,l])=>{
+      html+=`<div class="loan-card pending"><div><strong>${accName(l.borrower)}</strong> wants <strong>${l.amount} PB</strong></div><div style="font-size:.78rem;color:var(--dim)">Payback by: ${fmtDate(l.dueDate)}</div><div style="margin-top:6px"><button class="btn btn-sm btn-primary" onclick="approveLoan('${lid}')">Approve</button> <button class="btn btn-sm btn-danger" onclick="denyLoan('${lid}')">Deny</button></div></div>`;
+    });
+  }
+  const active=loans.filter(([lid,l])=>l.status==='active');
+  if(active.length){
+    html+='<h3 style="font-weight:700;margin:14px 0 8px;color:var(--blue)">Active Loans</h3>';
+    active.forEach(([lid,l])=>{
+      html+=`<div class="loan-card ${l.lateFee>0?'overdue':'active'}"><div><strong>${accName(l.borrower)}</strong> · ${l.amount} PB</div><div style="font-size:.78rem;color:var(--dim)">Due: ${fmtDate(l.dueDate)}${l.lateFee>0?' · <span style="color:var(--red)">Late: '+l.lateFee+' PB</span>':''}</div></div>`;
+    });
+  }
+  const past=loans.filter(([lid,l])=>l.status==='paid'||l.status==='denied');
+  if(past.length){
+    html+='<h3 style="font-weight:700;margin:14px 0 8px;color:var(--dim)">Past</h3>';
+    past.slice(0,10).forEach(([lid,l])=>{
+      html+=`<div class="loan-card paid"><div>${accName(l.borrower)} · ${l.amount} PB · ${l.status.toUpperCase()}</div></div>`;
+    });
+  }
+  if(!loans.length)html+='<div style="text-align:center;padding:40px;color:var(--dim)">No loans yet</div>';
+  c.innerHTML=html;
+}
+
+// ═══ ACTIONS ═══
+
+// Buy product
+async function buyProduct(bizId,pid){
+  if(U.isAdmin)return toast('Log in as user to buy');
+  const accs=D.accounts||{},biz=accs[bizId],prod=biz?.products?.[pid];if(!prod)return toast('Not found');
+  const myW=Object.entries(accs).find(([id,a])=>a.owner===U.username&&a.type==='personal');
+  if(!myW)return toast('No personal wallet');
+  const[myId,myAcc]=myW;
+  if(myAcc.balance<prod.price)return toast('Not enough PB!');
+  const up={};
+  up[R+'/accounts/'+myId+'/balance']=myAcc.balance-prod.price;
+  up[R+'/accounts/'+bizId+'/balance']=(biz.balance||0)+prod.price;
+  const txId='tx_'+Date.now()+'_'+Math.random().toString(36).substr(2,5);
+  up[R+'/transactions/'+txId]={from:myId,to:bizId,amount:prod.price,type:'Purchase',note:'Bought: '+prod.name,date:Date.now()};
+  const nId='n_'+Date.now()+'_'+Math.random().toString(36).substr(2,3);
+  up[R+'/notifications/'+nId]={to:biz.owner,icon:'🛒',msg:U.name+' bought '+prod.name+' for '+prod.price+' PB',date:Date.now(),read:false};
+  const rcId='rc_'+Date.now()+'_'+Math.random().toString(36).substr(2,3);
+  up[R+'/receipts/'+rcId]={buyer:U.username,buyerName:U.name,item:prod.name,price:prod.price,shop:biz.name,shopId:bizId,date:Date.now()};
+  await db.ref().update(up);
+  showReceipt(prod.name,prod.price,biz.name);
+}
+
+// Receipt
+function showReceipt(item,price,shop){
+  showMdl('🧾 Receipt',`<div class="receipt"><h3>Pa Bucks Receipt</h3><div class="r-line"><span>Item</span><span>${item}</span></div><div class="r-line"><span>Shop</span><span>${shop}</span></div><div class="r-line"><span>Date</span><span>${fmtDate(Date.now())}</span></div><div class="r-total">${price} PB</div><p style="margin-top:10px;font-size:.75rem;color:var(--dim)">Thank you for your purchase!</p></div>`,[{t:'Close',c:'btn-outline',fn:closeMdl}]);
+}
+
+// Receipts history
+function renderReceipts(c){
+  const receipts=Object.entries(D.receipts||{}).filter(([id,r])=>U.isAdmin||r.buyer===U.username).sort((a,b)=>b[1].date-a[1].date);
+  let html='<h2 style="font-weight:800;margin-bottom:14px">🧾 My Receipts</h2>';
+  if(receipts.length){
+    receipts.forEach(([id,r])=>{
+      html+=`<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;cursor:pointer" onclick="showReceipt('${r.item}',${r.price},'${r.shop}')">
+        <div style="font-size:1.3rem">🧾</div>
+        <div style="flex:1"><div style="font-weight:700;font-size:.88rem">${r.item}</div><div style="font-size:.72rem;color:var(--dim)">${r.shop} · ${fmtDate(r.date)}</div></div>
+        <div style="font-family:'Space Mono',monospace;font-weight:700;color:var(--red)">${r.price} PB</div>
+      </div>`;
+    });
+  }else html+='<div style="text-align:center;padding:40px;color:var(--dim)">No purchases yet</div>';
+  c.innerHTML=html;
+}
+
+// Send money
+function showSend(fromId){
+  const accs=D.accounts||{},from=accs[fromId];
+  let opts='';Object.entries(accs).forEach(([id,a])=>{if(id!==fromId)opts+=`<option value="${id}">${a.name} (${a.type})</option>`});
+  showMdl('💸 Send PB',`<p style="color:var(--dim);font-size:.82rem;margin-bottom:10px">From: <strong>${from.name}</strong> · Balance: ${from.balance} PB</p>
+    <div class="fg"><label>To</label><select id="s-to">${opts}</select></div>
+    <div class="fg"><label>Amount</label><input id="s-amt" type="number" min="1" placeholder="Amount"></div>
+    <div class="fg"><label>Note</label><input id="s-note" placeholder="What's this for?"></div>`,
+  [{t:'Send',c:'btn-primary',fn:async()=>{
+    const to=document.getElementById('s-to').value,amt=parseInt(document.getElementById('s-amt').value),note=document.getElementById('s-note').value.trim();
+    if(!to||!amt||amt<1)return toast('Fill in fields');if(amt>from.balance)return toast('Not enough PB!');
+    const toAcc=accs[to],up={};
+    up[R+'/accounts/'+fromId+'/balance']=from.balance-amt;
+    up[R+'/accounts/'+to+'/balance']=(toAcc.balance||0)+amt;
+    const txId='tx_'+Date.now()+'_'+Math.random().toString(36).substr(2,5);
+    up[R+'/transactions/'+txId]={from:fromId,to,amount:amt,type:'Transfer',note:note||'Transfer',date:Date.now()};
+    const nId='n_'+Date.now();
+    up[R+'/notifications/'+nId]={to:toAcc.owner,icon:'💸',msg:'Received '+amt+' PB from '+from.name,date:Date.now(),read:false};
+    await db.ref().update(up);closeMdl();toast('Sent '+amt+' PB!');
+  }},{t:'Cancel',c:'btn-outline',fn:closeMdl}]);
+}
+
+// Request money
+function showRequestMoney(walletId){
+  const accs=D.accounts||{},acc=accs[walletId];
+  let opts='';Object.entries(accs).forEach(([id,a])=>{if(id!==walletId)opts+=`<option value="${id}">${a.name} (${a.type})</option>`});
+  showMdl('📩 Request PB',`<div class="fg"><label>Request From</label><select id="rq-from">${opts}</select></div>
+    <div class="fg"><label>Amount</label><input id="rq-amt" type="number" min="1" placeholder="Amount"></div>
+    <div class="fg"><label>Reason</label><input id="rq-note" placeholder="Why?"></div>`,
+  [{t:'Send Request',c:'btn-primary',fn:async()=>{
+    const from=document.getElementById('rq-from').value,amt=parseInt(document.getElementById('rq-amt').value),note=document.getElementById('rq-note').value.trim();
+    if(!from||!amt)return toast('Fill in fields');
+    const fromAcc=accs[from];
+    const rId='req_'+Date.now();const nId='n_'+Date.now();
+    const up={};
+    up[R+'/requests/'+rId]={from:walletId,to:from,amount:amt,note,date:Date.now(),status:'pending'};
+    up[R+'/notifications/'+nId]={to:fromAcc.owner,icon:'📩',msg:acc.name+' is requesting '+amt+' PB'+(note?' for: '+note:''),date:Date.now(),read:false};
+    await db.ref().update(up);closeMdl();toast('Request sent!');
+  }},{t:'Cancel',c:'btn-outline',fn:closeMdl}]);
+}
+
+// Loan request
+function showLoanRequest(walletId){
+  showMdl('🏦 Request Loan',`<p style="color:var(--dim);font-size:.82rem;margin-bottom:10px">Loans come from the Pa Bucks Bank. Admin must approve. 250 PB/day late fee.</p>
+    <div class="fg"><label>Amount</label><input id="ln-amt" type="number" min="1" placeholder="How much PB?"></div>
+    <div class="fg"><label>Payback Date</label><input id="ln-due" type="date"></div>`,
+  [{t:'Submit Request',c:'btn-primary',fn:async()=>{
+    const amt=parseInt(document.getElementById('ln-amt').value),due=document.getElementById('ln-due').value;
+    if(!amt||amt<1)return toast('Enter amount');if(!due)return toast('Pick a date');
+    const dueDate=new Date(due).getTime();
+    const lid='loan_'+Date.now();const nId='n_'+Date.now();
+    const up={};
+    up[R+'/loans/'+lid]={borrower:walletId,amount:amt,dueDate,date:Date.now(),status:'pending',lateFee:0};
+    up[R+'/notifications/'+nId]={to:'admin',icon:'🏦',msg:accName(walletId)+' requests a loan of '+amt+' PB',date:Date.now(),read:false};
+    await db.ref().update(up);closeMdl();toast('Loan request sent!');
+  }},{t:'Cancel',c:'btn-outline',fn:closeMdl}]);
+}
+
+// Approve loan
+async function approveLoan(lid){
+  const loan=(D.loans||{})[lid];if(!loan)return;
+  const bank=D.accounts[BANK_ID];
+  if(bank.balance<loan.amount)return toast('Bank has insufficient funds!');
+  const borrowerAcc=D.accounts[loan.borrower];
+  const up={};
+  up[R+'/loans/'+lid+'/status']='active';
+  up[R+'/accounts/'+BANK_ID+'/balance']=bank.balance-loan.amount;
+  up[R+'/accounts/'+loan.borrower+'/balance']=(borrowerAcc?.balance||0)+loan.amount;
+  const txId='tx_'+Date.now();
+  up[R+'/transactions/'+txId]={from:BANK_ID,to:loan.borrower,amount:loan.amount,type:'Loan',note:'Loan approved',date:Date.now()};
+  const nId='n_'+Date.now();
+  up[R+'/notifications/'+nId]={to:borrowerAcc?.owner,icon:'✅',msg:'Your loan of '+loan.amount+' PB has been approved!',date:Date.now(),read:false};
+  await db.ref().update(up);toast('Loan approved!');
+}
+
+async function denyLoan(lid){
+  const loan=(D.loans||{})[lid];if(!loan)return;
+  const borrowerAcc=D.accounts[loan.borrower];
+  const up={};up[R+'/loans/'+lid+'/status']='denied';
+  const nId='n_'+Date.now();
+  up[R+'/notifications/'+nId]={to:borrowerAcc?.owner,icon:'❌',msg:'Your loan request of '+loan.amount+' PB was denied.',date:Date.now(),read:false};
+  await db.ref().update(up);toast('Loan denied');
+}
+
+// Repay loan
+async function repayLoan(lid){
+  const loan=(D.loans||{})[lid];if(!loan)return;
+  const total=loan.amount+(loan.lateFee||0);
+  const borrowerAcc=D.accounts[loan.borrower];
+  if(!borrowerAcc||borrowerAcc.balance<total)return toast('Not enough PB! Need '+total);
+  const bank=D.accounts[BANK_ID];
+  const up={};
+  up[R+'/loans/'+lid+'/status']='paid';
+  up[R+'/accounts/'+loan.borrower+'/balance']=borrowerAcc.balance-total;
+  up[R+'/accounts/'+BANK_ID+'/balance']=(bank?.balance||0)+total;
+  const txId='tx_'+Date.now();
+  up[R+'/transactions/'+txId]={from:loan.borrower,to:BANK_ID,amount:total,type:'Loan Repayment',note:'Loan repaid'+(loan.lateFee>0?' (incl '+loan.lateFee+' late fee)':''),date:Date.now()};
+  const nId='n_'+Date.now();
+  up[R+'/notifications/'+nId]={to:'admin',icon:'🏦',msg:accName(loan.borrower)+' repaid loan of '+total+' PB',date:Date.now(),read:false};
+  await db.ref().update(up);toast('Loan repaid!');
+}
+
+// Fine
+function showFine(accId){
+  const acc=(D.accounts||{})[accId];
+  showMdl('⚠️ Issue Fine',`<p style="color:var(--dim);font-size:.82rem;margin-bottom:10px">Fine <strong>${acc.name}</strong> (Balance: ${acc.balance} PB)</p>
+    <div class="fg"><label>Amount</label><input id="f-amt" type="number" min="1" placeholder="Fine amount"></div>
+    <div class="fg"><label>Reason</label><input id="f-note" placeholder="Why?"></div>`,
+  [{t:'Issue Fine',c:'btn-danger',fn:async()=>{
+    const amt=parseInt(document.getElementById('f-amt').value),note=document.getElementById('f-note').value.trim();
+    if(!amt)return toast('Enter amount');
+    const up={};
+    up[R+'/accounts/'+accId+'/balance']=Math.max(0,(acc.balance||0)-amt);
+    const txId='tx_'+Date.now();
+    up[R+'/transactions/'+txId]={from:accId,to:BANK_ID,amount:amt,type:'Fine',note:note||'Fine issued',date:Date.now()};
+    up[R+'/accounts/'+BANK_ID+'/balance']=(D.accounts[BANK_ID]?.balance||0)+amt;
+    const nId='n_'+Date.now();
+    up[R+'/notifications/'+nId]={to:acc.owner,icon:'⚠️',msg:'You were fined '+amt+' PB'+(note?' — '+note:''),date:Date.now(),read:false};
+    await db.ref().update(up);closeMdl();toast('Fine issued');
+  }},{t:'Cancel',c:'btn-outline',fn:closeMdl}]);
+}
+
+// Create account
+function showCreateAcc(){
+  showMdl('Create Account',`<div class="fg"><label>Type</label><select id="n-type"><option value="personal">Personal</option><option value="business">Business</option></select></div>
+    <div class="fg"><label>Name</label><input id="n-name" placeholder="e.g. Mohamed or Coffee Shop"></div>
+    <div class="fg"><label>Starting Balance</label><input id="n-bal" type="number" value="0" min="0"></div>
+    <div class="fg"><label>Owner Username</label><input id="n-owner" placeholder="For login"></div>
+    <div class="fg"><label>Password</label><input id="n-pass" placeholder="Set password"></div>`,
+  [{t:'Create',c:'btn-primary',fn:async()=>{
+    const type=document.getElementById('n-type').value,name=document.getElementById('n-name').value.trim(),
+      bal=parseInt(document.getElementById('n-bal').value)||0,owner=document.getElementById('n-owner').value.trim().toLowerCase(),
+      pass=document.getElementById('n-pass').value.trim();
+    if(!name||!owner||!pass)return toast('Fill all fields');
+    const id='acc_'+Date.now()+'_'+Math.random().toString(36).substr(2,5);
+    const up={};
+    up[R+'/accounts/'+id]={type,name,balance:bal,owner,ownerName:name,products:{}};
+    up[R+'/users/'+owner]={name,pass};
+    await db.ref().update(up);closeMdl();toast('Created!');
+  }},{t:'Cancel',c:'btn-outline',fn:closeMdl}]);
+}
+
+function showTransfer(accId){
+  const acc=(D.accounts||{})[accId];
+  showMdl('Transfer Ownership',`<p style="color:var(--dim);font-size:.82rem;margin-bottom:10px">Transfer <strong>${acc.name}</strong></p>
+    <div class="fg"><label>New Owner Username</label><input id="tr-owner" placeholder="e.g. noor"></div>`,
+  [{t:'Transfer',c:'btn-primary',fn:async()=>{
+    const o=document.getElementById('tr-owner').value.trim().toLowerCase();if(!o)return toast('Enter username');
+    await db.ref(R+'/accounts/'+accId+'/owner').set(o);closeMdl();toast('Transferred!');
+  }},{t:'Cancel',c:'btn-outline',fn:closeMdl}]);
+}
+
+function showAddPB(accId){
+  const acc=(D.accounts||{})[accId];
+  showMdl('Add PB',`<p style="color:var(--dim);font-size:.82rem;margin-bottom:10px">${acc.name} · ${acc.balance} PB</p>
+    <div class="fg"><label>Amount</label><input id="ap-amt" type="number" min="1"></div>`,
+  [{t:'Add',c:'btn-primary',fn:async()=>{
+    const amt=parseInt(document.getElementById('ap-amt').value)||0;if(amt<1)return toast('Enter amount');
+    await db.ref(R+'/accounts/'+accId+'/balance').set((acc.balance||0)+amt);closeMdl();toast('+'+amt+' PB');
+  }},{t:'Cancel',c:'btn-outline',fn:closeMdl}]);
+}
+
+async function deleteAcc(id){if(!confirm('Delete this account?'))return;await db.ref(R+'/accounts/'+id).remove();toast('Deleted')}
+
+function showAddProduct(wid){
+  showMdl('Add Product',`<div class="fg"><label>Name</label><input id="p-name" placeholder="e.g. Chips"></div>
+    <div class="fg"><label>Price (PB)</label><input id="p-price" type="number" min="1"></div>`,
+  [{t:'Add',c:'btn-primary',fn:async()=>{
+    const name=document.getElementById('p-name').value.trim(),price=parseInt(document.getElementById('p-price').value);
+    if(!name||!price)return toast('Fill fields');
+    await db.ref(R+'/accounts/'+wid+'/products/prod_'+Date.now()).set({name,price});closeMdl();toast('Added!');
+  }},{t:'Cancel',c:'btn-outline',fn:closeMdl}]);
+}
+
+async function rmProduct(wid,pid){if(!confirm('Remove?'))return;await db.ref(R+'/accounts/'+wid+'/products/'+pid).remove();toast('Removed')}
+
+// ═══ HELPERS ═══
+function accName(id){return(D?.accounts||{})[id]?.name||'Unknown'}
+function fmtDate(ts){if(!ts)return'';const d=new Date(ts);return d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}
+function toast(m){const c=document.getElementById('tb'),t=document.createElement('div');t.className='toast';t.textContent=m;c.appendChild(t);setTimeout(()=>t.remove(),3000)}
+function showMdl(title,body,btns){
+  document.getElementById('mt').textContent=title;document.getElementById('mb').innerHTML=body;
+  const a=document.getElementById('ma');a.innerHTML='';
+  (btns||[]).forEach(b=>{const btn=document.createElement('button');btn.className='btn '+(b.c||'btn-primary');btn.textContent=b.t;btn.onclick=b.fn;a.appendChild(btn)});
+  document.getElementById('mbg').classList.add('open');
+}
+function closeMdl(){document.getElementById('mbg').classList.remove('open')}
+document.getElementById('mbg').addEventListener('click',e=>{if(e.target===e.currentTarget)closeMdl()});
+</script>
+</body>
+</html>
